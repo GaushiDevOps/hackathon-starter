@@ -1,0 +1,25 @@
+name: hackathon-CD
+
+on:
+  workflow_dispatch:
+
+jobs: 
+  helm_deploy:
+    runs-on: [ runner, self-hosted ]
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it.
+      - name: checkout
+        uses: actions/checkout@v3
+      
+      - name: Deploy Helm Chart
+        working-directory: ./helm/
+        shell: bash
+        run: |
+          sudo chmod +x values-updator.sh
+          # this script would update the values.yaml file with the latest image pushed in the ACR
+          ./values-updator.sh
+          # setting up the namespace before deployment
+          kubectl config set-context --current --namespace=hackathon
+          # this will create a packaged version of helm chart
+          helm package $(pwd)
+          helm upgrade --install nodejs_app $(pwd)/nodejs_app-helm-charts-0.1.0.tgz
