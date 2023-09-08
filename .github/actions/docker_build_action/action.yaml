@@ -1,0 +1,18 @@
+name: docker_build 
+description: Build containers and set up the docker system
+runs:
+  using: composite
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    
+    - name: Cleanup Dangling Docker Images 
+      shell: bash 
+      if: always()
+      run: docker image prune -f
+    
+    - name: Build Image
+      shell: bash
+      run: 
+        docker buildx build -f Dockerfile -t ${{ env.ACR_NAME }}.azurecr.io/image:build-${{ github.run_number }}
+      

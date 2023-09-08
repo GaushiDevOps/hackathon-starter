@@ -1,0 +1,11 @@
+name: image push to acr
+description: here we are pushing the built image to ACR 
+runs:
+  using: composite
+  steps:
+    - name: Push Images 
+      shell: bash 
+      run: |
+        az acr login --name ${{ env.ACR_NAME }}
+        docker push ${{ env.ACR_NAME }}.azurecr.io/image:build-${{ github.run_number }}
+        

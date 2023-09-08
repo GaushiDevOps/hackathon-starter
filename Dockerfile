@@ -1,16 +1,22 @@
-FROM node:18-slim
+FROM node:latest
 
-WORKDIR /starter
-ENV NODE_ENV development
+# Setting the working directory in the container
+WORKDIR /app
 
-COPY package.json /starter/package.json
+# Copy package.json and package-lock.json to the working directory
+COPY package*.json ./
 
-RUN npm install pm2 -g
-RUN npm install --production
+RUN npm install --ignore-scripts
 
-COPY .env.example /starter/.env.example
-COPY . /starter
-
-CMD ["pm2-runtime","app.js"]
+RUN npm install -g patch-package
 
 EXPOSE 8080
+
+# Copying the rest of the application source code to the working directory
+COPY . .
+
+# Manually applied patches and build CSS
+RUN patch-package && npm run scss
+
+# Defining the command to start our Node.js application
+CMD ["node", "app.js"]

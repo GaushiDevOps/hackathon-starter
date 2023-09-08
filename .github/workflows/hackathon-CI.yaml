@@ -1,0 +1,57 @@
+# Workflow file
+name: hackathon-CI
+
+on:
+  workflow_dispatch:
+
+jobs:
+  
+  # Job1
+  Docker_Build:
+    runs-on: [runner1, x64]
+    environment: CIEnvironment
+    env:
+      ACR_NAME: ${{ secrets.ACR_NAME }}
+    steps:
+      - name: Checkout 
+        uses: actions/checkout@v3
+      - name: Perform Docker Build 
+        uses: ./.github/actions/docker_build_action/
+  
+  # Job2
+  Image_Scan:
+    runs-on: [runner1, Linux, x64]
+    environment: CIEnvironment
+    env:
+      ACR_NAME: ${{ secrets.ACR_NAME }}
+    needs: [Docker_Build]
+    steps:
+      - name: Scanning the Docker Image
+        uses: ./.github/actions/docker_image_scan_action/
+  
+  # Job3
+  SonarQube_analysis:
+    runs-on: [runner2, x64]
+    environment: CIEnvironment
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+    steps:
+      - name: Checkout 
+        uses: actions/checkout@v3
+      - name: Perform SonarQube Code Analysis
+        uses: ./.github/actions/sonar_code_analysis_action/
+  
+  # Job4
+  Push_to_ACR:
+    runs-on: [runner1, Linux]
+    environment: CIEnvironment
+    env:
+      ACR_NAME: ${{ secrets.ACR_NAME }}
+    needs: [Docker_Build, Image_Scan]
+    steps:
+      - name: Push Built Image to ACR 
+        uses: ./.github/actions/image_push_action/
+
+
+

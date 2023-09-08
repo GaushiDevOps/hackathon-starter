@@ -1,0 +1,14 @@
+name: image scan
+description: here we are scanning the built image for vulnerabilities
+runs:
+  using: composite
+  steps:
+    - name: Docker Image Scanning with Trivy
+      shell: bash 
+      run: |
+        trivy --exit-code 1 --severity HIGH,CRITICAL ${{ env.ACR_NAME }}.azurecr.io/image:build-${{ github.run_number }}
+        if [ $? -eq 1 ]; then
+          echo "Aborting build due to vulnerabilities."
+          exit 1
+        fi
+      

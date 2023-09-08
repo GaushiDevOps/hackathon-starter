@@ -1,0 +1,17 @@
+name: nodejs-app
+image:
+  name: testacr.azurecr.io/img
+  tag: build-1
+
+service:
+  name: nodejs-app
+  port: 8080
+  type: NodePort
+
+config:
+  name: mongodb-config
+
+secrets:
+  name: mongodb-credentials
+  dbname: test
+
